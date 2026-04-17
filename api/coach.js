@@ -25,10 +25,12 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    console.log('Anthropic response:', JSON.stringify(data));
     const text = data.content?.[0]?.text || 'Please book a free discovery session so we can dig into your situation together.';
     return res.status(200).json({ text });
 
   } catch (err) {
+    console.error('Error:', err);
     return res.status(500).json({ error: 'Something went wrong. Please try again.' });
   }
 }
