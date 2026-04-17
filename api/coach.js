@@ -1,13 +1,13 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: 'No prompt provided' });
-  }
+  if (!prompt) return res.status(400).json({ error: 'No prompt provided' });
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -25,15 +25,7 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-
-    if (data.error) {
-      return res.status(500).json({ error: data.error.message });
-    }
-
-    const text = data.content && data.content[0] && data.content[0].text
-      ? data.content[0].text
-      : 'Thank you for sharing that. I would love to explore this with you further. Please book a free discovery session so we can dig into your specific situation together.';
-
+    const text = data.content?.[0]?.text || 'Please book a free discovery session so we can dig into your situation together.';
     return res.status(200).json({ text });
 
   } catch (err) {
